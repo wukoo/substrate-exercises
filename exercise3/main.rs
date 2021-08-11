@@ -5,21 +5,19 @@ use std::io::{Read, Write};
 fn handle_client(mut stream: TcpStream) {
     // 创建50字节的buffer
     let mut data = [0 as u8; 50]; 
-    // 错误匹配
+    // 读取stream的data，匹配错误
     match stream.read(&mut data) {
         Ok(size) => {
             // 返回所有接收到信息
             stream.write(&data[0..size]).unwrap();
-            true
         },
         Err(_) => {
             // 出错后 打印错误并退出
-            println!("An error occurred, terminating connection with {}", stream.peer_addr()?);
+            println!("An error occurred, terminating connection with {}", stream.peer_addr().unwrap());
             // 关闭stream
-            stream.shutdown(Shutdown::Both)?;
-            false
+            stream.shutdown(Shutdown::Both).unwrap();
         }
-    } 
+    }{}
 }
 
 fn main() {
@@ -31,10 +29,11 @@ fn main() {
         // 模式匹配，处理错误和异常
         match stream {
             Ok(stream) => {
+                // 打印对端的ip和端口
                 println!("New connection: {}", stream.peer_addr().unwrap());
                 //  创建一个线程处理 ，move 强制闭包获取其使用的值的所有权
                 thread::spawn(move|| {
-                    // connection succeeded
+                    // connection succeeded 处理stream
                     handle_client(stream)
                 });
             }
